@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/fragment_settings"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:text="Please provide ip infomation to connect!!!"/>
+
+    <Button
+        android:id="@+id/wifi_connect_btn"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="wifi connect"/>
+
+    <Button
+        android:id="@+id/ip_setting_info_btn"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="ip setting info"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:text="Services : Please do wifi connection first and then you can click the check box to choose services.)"/>
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="weather service"/>
+
+
+    <CheckBox
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="navigation sevice"/>
+
+
+</LinearLayout>

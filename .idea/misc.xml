@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/drawable/ic_launcher_background.xml" value="0.26979166666666665" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/drawable/tab_menu_channel.xml" value="0.26979166666666665" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/alertdialog_connection.xml" value="0.4" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/alertdialog_ipinfo.xml" value="0.264" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/asd.xml" value="0.2346014492753623" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/common/layout/asd.xml" value="0.1296875" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/weather_activity.xml" value="0.1793478260869565" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_common/layout/icon_structure.xml" value="0.4" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_common/layout/settingitem_structure.xml" value="0.264" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_home.xml" value="0.4" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_services.xml" value="0.152" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_settings.xml" value="0.264" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
