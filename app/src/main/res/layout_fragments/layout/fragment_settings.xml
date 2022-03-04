@@ -29,13 +29,16 @@
         android:layout_height="wrap_content"
         android:textSize="20dp"
         android:text="Services : Please do wifi connection first and then you can click the check box to choose services.)"/>
+
     <CheckBox
+        android:id="@+id/weahter_service_cb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="weather service"/>
 
 
     <CheckBox
+        android:id="@+id/navigation_service_cb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="navigation sevice"/>

@@ -3,11 +3,16 @@ package com.zhong.mzglass;
 import static com.zhong.mzglass.utils.Constants.*;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import com.zhong.mzglass.base.BaseActivity;
@@ -16,7 +21,14 @@ import com.zhong.mzglass.ui.FragmentHome;
 import com.zhong.mzglass.ui.FragmentServices;
 import com.zhong.mzglass.ui.FragmentSettings;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingDeque;
+
 import com.zhong.mzglass.utils.Constants;
 
 public class MainActivity extends BaseActivity {
@@ -31,6 +43,9 @@ public class MainActivity extends BaseActivity {
     private RadioButton rb_settings;
     private RadioButton rb_home;
     private RadioButton rb_services;
+    private FragmentManager manager;
+    private FragmentTransaction transaction;
+    private HttpURLConnection httpURLConnection;
 
 
     @Override
@@ -40,6 +55,42 @@ public class MainActivity extends BaseActivity {
 
         initBind();
         initView();
+        Log.d("Weather", "run: out");
+//
+//        new Thread(new Runnable() {
+//            private InputStream inputStream;
+//
+//            @Override
+//            public void run() {
+//                try {
+////                    URL url = new URL("https://restapi.amap.com/v3/weather/weatherInfo?city=110101&key=" +
+////                            "5b54ba64d699a8f8f2b9e728073582e4");
+//                    URL url = new URL("https://ww2.sinaimg.cn/large/7a8aed7bgw1evshgr5z3oj20hs0qo0vq.jpg");
+//                    if(url != null){
+//                        try {
+//                            httpURLConnection = (HttpURLConnection) url.openConnection();
+//                            //设置超时时间
+//                            httpURLConnection.setConnectTimeout(3000);
+//                            //设置请求方式
+//                            httpURLConnection.setRequestMethod("GET");
+//                            Log.d("Weather", "run: out");
+//                            int responsecode = httpURLConnection.getResponseCode();
+//                            Log.d("Weather", "run: out");
+//                            if(responsecode == HttpURLConnection.HTTP_OK){
+//                                inputStream = httpURLConnection.getInputStream();
+//                            }
+//                            Log.d("Weather", "run: ok");
+//                        } catch (IOException e) {
+//                            // TODO Auto-generated catch block
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                } catch (MalformedURLException e) {
+//                    // TODO Auto-generated catch block
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
 
@@ -51,6 +102,7 @@ public class MainActivity extends BaseActivity {
         rb_settings = (RadioButton) findViewById(R.id.rb_settings);
     }
 
+    @SuppressLint("ResourceType")
     private void initView() {
         fragmentHome = new FragmentHome();
         fragmentServices = new FragmentServices();
@@ -64,6 +116,7 @@ public class MainActivity extends BaseActivity {
 
         fgVpgAdapter = new FgVpgAdapter(getSupportFragmentManager(),0,fgList);
         vpg.setAdapter(fgVpgAdapter);
+        vpg.setOffscreenPageLimit(2);
         vpg.setCurrentItem(0);
         rb_home.setChecked(true);
 
@@ -117,5 +170,13 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == 1 && resultCode == 1) {
+            vpg.setCurrentItem(1);
+            Log.d("BACK", "onActivityResult: ok");
+//        }
+    }
 
 }

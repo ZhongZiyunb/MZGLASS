@@ -12,6 +12,7 @@ public class SocketService extends Service {
     // 总共需要三个对象：
     // 给到前端相应显示 --> UI层
 
+    // 先用现成的Service吧
 
     @Nullable
     @Override
