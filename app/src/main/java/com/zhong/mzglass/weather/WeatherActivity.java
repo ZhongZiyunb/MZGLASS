@@ -31,6 +31,7 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
+
         iniBind();
         initService();
         initView();
@@ -42,6 +43,7 @@ public class WeatherActivity extends AppCompatActivity {
         mWindDirectionTxt = (TextView) findViewById(R.id.info_windDirection);
         mWindForceTxt = (TextView) findViewById(R.id.info_windForce);
         backBtn = (Button) findViewById(R.id.weather_to_service_btn);
+
     }
 
     private void initView() {
@@ -50,9 +52,7 @@ public class WeatherActivity extends AppCompatActivity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(WeatherActivity.this, MainActivity.class);
-//                setResult(1);
-//                startActivity(intent);
+
                 finish();
             }
         });
@@ -72,6 +72,7 @@ public class WeatherActivity extends AppCompatActivity {
             iWeatherController = (IWeatherController) iBinder;
             iWeatherController.registerIwvController(iwViewController);
             iwViewController.UpdateView(iWeatherController.getWeatherInfo());
+            iWeatherController.Update();
         }
 
         @Override
@@ -99,6 +100,7 @@ public class WeatherActivity extends AppCompatActivity {
         super.onDestroy();
         if (mConnection != null && iWeatherController != null) {
             iWeatherController.unregisterIwvController();
+            unbindService(mConnection);
         }
     }
 }

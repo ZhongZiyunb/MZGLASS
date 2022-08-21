@@ -1,19 +1,20 @@
 package com.zhong.mzglass.weather;
 
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
-import com.amap.api.services.core.AMapException;
-import com.amap.api.services.weather.LocalWeatherForecastResult;
-import com.amap.api.services.weather.LocalWeatherLive;
-import com.amap.api.services.weather.LocalWeatherLiveResult;
-import com.amap.api.services.weather.WeatherSearch;
-import com.amap.api.services.weather.WeatherSearchQuery;
+
+import com.zhong.mzglass.bluetooth.gatt.BleGattService;
+import com.zhong.mzglass.bluetooth.gatt.IBleGattController;
+import com.zhong.mzglass.socket.ISocketController;
+import com.zhong.mzglass.socket.SocketService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,21 +29,17 @@ import okhttp3.Response;
 
 // TODO: 下午把天气页面做完 这周任务基本完成
 
-public class WeatherService extends Service implements WeatherSearch.OnWeatherSearchListener {
+public class WeatherService extends Service {
+
+    // 理一下逻辑：
+    // 首先 前端绑定weather作操作。
+    // 然后WeatherService绑定后端作传输操作。
+
 
     private static final String TAG = "WeatherService";
     WeatherPresenter wPresenter;
-    private WeatherSearchQuery mquery;
-    private WeatherSearch mweathersearch;
-    private BreakIterator reporttime1;
-    private BreakIterator weather;
-    private LocalWeatherLive weatherlive;
-    private BreakIterator Temperature;
-    private BreakIterator wind;
-    private BreakIterator humidity;
-    private ActionBar ToastUtil;
-    private HttpURLConnection httpURLConnection;
-    private InputStream inputStream;
+    private ISocketController iSocketController;
+    private IBleGattController mBleGattController;
 
     @Override
     public void onCreate() {
@@ -52,10 +49,28 @@ public class WeatherService extends Service implements WeatherSearch.OnWeatherSe
         wPresenter = new WeatherPresenter(getApplicationContext());
 
         initService();
-
-
-
+        initBindService();
     }
+
+    private void initBindService() {
+        Intent intent = new Intent(this, BleGattService.class);
+        bindService(intent,mConn,BIND_AUTO_CREATE);
+    }
+
+
+    ServiceConnection mConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            mBleGattController = (IBleGattController) iBinder;
+            wPresenter.registerGattService(mBleGattController);
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            wPresenter.unregisterGattService();
+        }
+    };
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -81,25 +96,7 @@ public class WeatherService extends Service implements WeatherSearch.OnWeatherSe
     public void onDestroy() {
         Log.d(TAG, "onDestroy: weather service destroy");
         super.onDestroy();
+        unbindService(mConn);
     }
 
-    @Override
-    public void onWeatherLiveSearched(LocalWeatherLiveResult localWeatherLiveResult, int i) {
-        if (i == 1000) {
-            if (localWeatherLiveResult != null && localWeatherLiveResult.getLiveResult() != null) {
-                weatherlive = localWeatherLiveResult.getLiveResult();
-                reporttime1.setText(weatherlive.getReportTime() + "发布");
-                weather.setText(weatherlive.getWeather());
-                Temperature.setText(weatherlive.getTemperature() + "°");
-                wind.setText(weatherlive.getWindDirection() + "风     " + weatherlive.getWindPower() + "级");
-                humidity.setText("湿度         " + weatherlive.getHumidity() + "%");
-                Log.d(TAG, "onWeatherLiveSearched: "+ weatherlive.getWeather());
-            }
-        }
-    }
-
-    @Override
-    public void onWeatherForecastSearched(LocalWeatherForecastResult localWeatherForecastResult, int i) {
-
-    }
 }

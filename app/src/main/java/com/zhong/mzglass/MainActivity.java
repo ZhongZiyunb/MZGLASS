@@ -2,14 +2,17 @@ package com.zhong.mzglass;
 
 import static com.zhong.mzglass.utils.Constants.*;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -21,15 +24,8 @@ import com.zhong.mzglass.ui.FragmentHome;
 import com.zhong.mzglass.ui.FragmentServices;
 import com.zhong.mzglass.ui.FragmentSettings;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingDeque;
-
-import com.zhong.mzglass.utils.Constants;
 
 public class MainActivity extends BaseActivity {
 
@@ -46,51 +42,40 @@ public class MainActivity extends BaseActivity {
     private FragmentManager manager;
     private FragmentTransaction transaction;
     private HttpURLConnection httpURLConnection;
+    private String TAG = "MAIN";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "onCreate: in");
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.READ_SMS)!= PackageManager.PERMISSION_GRANTED||
+                ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.RECEIVE_SMS)
+                        !=PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.READ_SMS,Manifest.permission.RECEIVE_SMS},
+                    1);
+        }
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CALL_LOG)
+                != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.READ_CALL_LOG},1);
+        }
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
+                    1);
+        }
+        //动态申请权限
 
         initBind();
         initView();
-        Log.d("Weather", "run: out");
-//
-//        new Thread(new Runnable() {
-//            private InputStream inputStream;
-//
-//            @Override
-//            public void run() {
-//                try {
-////                    URL url = new URL("https://restapi.amap.com/v3/weather/weatherInfo?city=110101&key=" +
-////                            "5b54ba64d699a8f8f2b9e728073582e4");
-//                    URL url = new URL("https://ww2.sinaimg.cn/large/7a8aed7bgw1evshgr5z3oj20hs0qo0vq.jpg");
-//                    if(url != null){
-//                        try {
-//                            httpURLConnection = (HttpURLConnection) url.openConnection();
-//                            //设置超时时间
-//                            httpURLConnection.setConnectTimeout(3000);
-//                            //设置请求方式
-//                            httpURLConnection.setRequestMethod("GET");
-//                            Log.d("Weather", "run: out");
-//                            int responsecode = httpURLConnection.getResponseCode();
-//                            Log.d("Weather", "run: out");
-//                            if(responsecode == HttpURLConnection.HTTP_OK){
-//                                inputStream = httpURLConnection.getInputStream();
-//                            }
-//                            Log.d("Weather", "run: ok");
-//                        } catch (IOException e) {
-//                            // TODO Auto-generated catch block
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                } catch (MalformedURLException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
     }
 
 
@@ -100,6 +85,7 @@ public class MainActivity extends BaseActivity {
         rb_home = (RadioButton) findViewById(R.id.rb_home);
         rb_services = (RadioButton) findViewById(R.id.rb_services);
         rb_settings = (RadioButton) findViewById(R.id.rb_settings);
+
     }
 
     @SuppressLint("ResourceType")

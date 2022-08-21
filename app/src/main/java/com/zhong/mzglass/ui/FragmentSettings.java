@@ -3,9 +3,13 @@ package com.zhong.mzglass.ui;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +31,16 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.zhong.mzglass.R;
 import com.zhong.mzglass.base.BaseFragment;
+import com.zhong.mzglass.bluetooth.gatt.BleGattService;
+import com.zhong.mzglass.event.EventService;
+import com.zhong.mzglass.navigation.NavigateService;
+import com.zhong.mzglass.socket.ISocketController;
+import com.zhong.mzglass.socket.SocketService;
+import com.zhong.mzglass.utils.Constants;
 import com.zhong.mzglass.weather.WeatherService;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Objects;
 
 public class FragmentSettings extends BaseFragment {
@@ -50,6 +62,11 @@ public class FragmentSettings extends BaseFragment {
     private CheckBox weatherServiceCheckBox;
     private CheckBox navigationServiceCheckBox;
     private FragmentManager manager;
+    private Button wifiCloseBtn;
+    private Intent socketIntent;
+    private TextView debugText;
+    private CheckBox gattServiceCheckBox;
+    private CheckBox eventServiceCheckBox;
 
 
     @Override
@@ -67,19 +84,46 @@ public class FragmentSettings extends BaseFragment {
 
         initBind();
         initView();
-
+        initService();
         return settingsView;
     }
 
+    private void initService() {
+        Intent intent = new Intent(getActivity(), SocketService.class);
+        Objects.requireNonNull(getActivity()).bindService(intent, mConn, Context.BIND_AUTO_CREATE);
+    }
+
+    private ISocketController isController;
+    private ServiceConnection mConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            isController = (ISocketController) iBinder;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     private void initBind() {
         manager = getFragmentManager();
-        wifiConnectBtn = (Button) settingsView.findViewById(R.id.wifi_connect_btn);
-        ipSettingInfoBtn = (Button) settingsView.findViewById(R.id.ip_setting_info_btn);
+//        wifiConnectBtn = (Button) settingsView.findViewById(R.id.wifi_connect_btn);
+//        ipSettingInfoBtn = (Button) settingsView.findViewById(R.id.ip_setting_info_btn);
+//        wifiCloseBtn = (Button) settingsView.findViewById(R.id.wifi_close_btn);
         weatherServiceCheckBox = (CheckBox) settingsView.findViewById(R.id.weahter_service_cb);
         navigationServiceCheckBox = (CheckBox) settingsView.findViewById(R.id.navigation_service_cb);
+        gattServiceCheckBox = (CheckBox) settingsView.findViewById(R.id.gatt_service_cb);
+        eventServiceCheckBox = (CheckBox) settingsView.findViewById(R.id.event_service_cb);
+        debugText = (TextView) settingsView.findViewById(R.id.debug_text);
     }
     private void initView() {
+
+        /**
+        // 用于开启和关闭socket通信
+        socketIntent = new Intent(getActivity(), SocketService.class);
+//        getActivity()
+//                .startService(socketIntent);
         wifiConnectBtn.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("CutPasteId")
             @Override
@@ -93,7 +137,7 @@ public class FragmentSettings extends BaseFragment {
                 AlertDialog alertLogin = new AlertDialog.Builder(getActivity()).setView(v).create();
 
                 loginIP = (EditText) v.findViewById(R.id.wifi_connect_ip_et);
-                loginPort = (EditText) v.findViewById(R.id.wifi_connect_ip_et);
+                loginPort = (EditText) v.findViewById(R.id.wifi_connect_port_et);
 
                 btn = (Button) v.findViewById(R.id.wifi_connect_confirm_btn);
                 btn.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +148,12 @@ public class FragmentSettings extends BaseFragment {
                         PORT = loginPort.getText().toString();
                         STATE = "TODO";
                         Toast.makeText(getActivity(), "self button", Toast.LENGTH_SHORT).show();
+                        // TODO:这边需要做一个输入格式的校验——>
+                        // 开启 socket 通信
+
+//                        Objects.requireNonNull(getActivity()).startService(socketIntent);
+                        isController.socketRun(IP, PORT);
+                        Log.d(TAG, "onClick: start socket service!");
                         alertLogin.cancel();
                     }
                 });
@@ -131,6 +181,16 @@ public class FragmentSettings extends BaseFragment {
             }
         });
 
+        wifiCloseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "onClick: close socket service");
+                Objects.requireNonNull(getActivity()).stopService(socketIntent);
+            }
+        });
+        */
+
+        // 天气服务
         weatherServiceCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -143,31 +203,110 @@ public class FragmentSettings extends BaseFragment {
 
                 if (weatherServiceCheckBox.isChecked()) {
                     Log.d(TAG, "onCheckedChanged: IS CHECKED");
-                    fragmentServices.setServiceState(true);
+                    fragmentServices.setServiceState(true, Constants.SERVICE_WEATHER);
                     Toast.makeText(getActivity(), "CHECK BOX START WEATHER SERVICE ", Toast.LENGTH_SHORT).show();
-
                     getActivity().startService(intent);
 
                 } else {
 
                     getActivity().stopService(intent);
-                    fragmentServices.setServiceState(false);
+                    fragmentServices.setServiceState(false, Constants.SERVICE_WEATHER);
                     Toast.makeText(getActivity(), "CHECK BOX STOP WEATHER SERVICE ", Toast.LENGTH_SHORT).show();
-
                 }
-
             }
         });
 
+        // 导航服务
         navigationServiceCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                //TODO:导航功能待完成
+                // TODO:导航功能待完成
+                ViewPager vpg = (ViewPager) getActivity().findViewById(R.id.vpager);
+                FragmentPagerAdapter fpgAdapter = (FragmentPagerAdapter) vpg.getAdapter();
+                assert fpgAdapter != null;
+                // TODO: 下面这一句有点忘了，注意一下是否有问题
+                FragmentServices fragmentServices = (FragmentServices) fpgAdapter.instantiateItem(vpg,1);
+                Intent intent = new Intent(getActivity(), NavigateService.class);
+
+                // 开启导航服务
+                if (navigationServiceCheckBox.isChecked()) {
+                    Log.d(TAG, "onCheckedChanged: IS CHECKED");
+                    fragmentServices.setServiceState(true, Constants.SERVICE_NAVIGATE);
+                    Toast.makeText(getActivity(), "CHECK BOX START NAVIGATE SERVICE ", Toast.LENGTH_SHORT).show();
+                    getActivity().startService(intent);
+
+                } else {
+
+                    getActivity().stopService(intent);
+                    fragmentServices.setServiceState(false, Constants.SERVICE_NAVIGATE);
+                    Toast.makeText(getActivity(), "CHECK BOX STOP NAVIGATE SERVICE ", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // 蓝牙服务
+        gattServiceCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // TODO:导航功能待完成
+                ViewPager vpg = (ViewPager) getActivity().findViewById(R.id.vpager);
+                FragmentPagerAdapter fpgAdapter = (FragmentPagerAdapter) vpg.getAdapter();
+                assert fpgAdapter != null;
+                // TODO: 下面这一句有点忘了，注意一下是否有问题
+                FragmentServices fragmentServices = (FragmentServices) fpgAdapter.instantiateItem(vpg,1);
+                Intent intent = new Intent(getActivity(), BleGattService.class);
+
+                // 开启导航服务
+                if (gattServiceCheckBox.isChecked()) {
+                    Log.d(TAG, "onCheckedChanged: IS CHECKED");
+                    fragmentServices.setServiceState(true, Constants.SERVICE_GATT);
+                    Toast.makeText(getActivity(), "CHECK BOX START GATT SERVICE ", Toast.LENGTH_SHORT).show();
+                    getActivity().startService(intent);
+
+                } else {
+
+                    getActivity().stopService(intent);
+                    fragmentServices.setServiceState(false, Constants.SERVICE_GATT);
+                    Toast.makeText(getActivity(), "CHECK BOX STOP GATT SERVICE ", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // 事件提醒服务
+        eventServiceCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                // TODO:导航功能待完成
+                ViewPager vpg = (ViewPager) getActivity().findViewById(R.id.vpager);
+                FragmentPagerAdapter fpgAdapter = (FragmentPagerAdapter) vpg.getAdapter();
+                assert fpgAdapter != null;
+                // TODO: 下面这一句有点忘了，注意一下是否有问题
+                FragmentServices fragmentServices = (FragmentServices) fpgAdapter.instantiateItem(vpg,1);
+                Intent intent = new Intent(getActivity(), EventService.class);
+
+                // 开启导航服务
+                if (eventServiceCheckBox.isChecked()) {
+                    Log.d(TAG, "onCheckedChanged: IS CHECKED");
+                    fragmentServices.setServiceState(true, Constants.SERVICE_EVENT);
+                    Toast.makeText(getActivity(), "CHECK BOX START EVENT SERVICE ", Toast.LENGTH_SHORT).show();
+                    getActivity().startService(intent);
+
+                } else {
+
+                    getActivity().stopService(intent);
+                    fragmentServices.setServiceState(false, Constants.SERVICE_EVENT);
+                    Toast.makeText(getActivity(), "CHECK BOX STOP EVENT SERVICE ", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
     }
 
-
-
+    @Override
+    public void onDestroy() {
+        if (isController !=null && mConn != null) {
+            Objects.requireNonNull(getActivity()).unbindService(mConn);
+        }
+        super.onDestroy();
+    }
 }

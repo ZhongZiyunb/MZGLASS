@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TARGET DEVICE: "/>
+
+        <EditText
+            android:id="@+id/ble_target_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="glass"/>
+
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/ble_detect_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="detect connected device"/>
+
+
+    <ListView
+        android:id="@+id/ble_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+
+        android:clickable="true"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NAME:"/>
+
+        <TextView
+            android:id="@+id/ble_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="unknown name"/>
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MAC:"/>
+
+        <TextView
+            android:id="@+id/ble_mac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="unknown mac"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+
+            android:text="SERVICE UUID:"/>
+
+        <TextView
+            android:id="@+id/ble_service_UUID"
+            android:layout_width="wrap_content"
+
+            android:layout_height="wrap_content"
+            android:text="unknown service uuid"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CONNECTION STATE:"/>
+
+        <TextView
+            android:id="@+id/ble_connect_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="unknown state"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp">
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SEND MESSAGE:"/>
+
+        <EditText
+            android:id="@+id/ble_send_message"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:hint="your message"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/ble_send_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="send Message"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp">
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RECEIVE MESSAGE:"/>
+
+        <TextView
+            android:id="@+id/ble_receive_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="unknown recv message"/>
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/ble_go_back_home"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="go back"
+        android:layout_marginTop="10dp"
+        android:textSize="15sp"/>
+
+</LinearLayout>

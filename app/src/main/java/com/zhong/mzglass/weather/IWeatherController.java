@@ -1,5 +1,7 @@
 package com.zhong.mzglass.weather;
 
+import com.zhong.mzglass.bluetooth.gatt.IBleGattController;
+import com.zhong.mzglass.socket.ISocketController;
 import com.zhong.mzglass.utils.WeatherInfo;
 
 public interface IWeatherController {
@@ -21,6 +23,18 @@ public interface IWeatherController {
     void registerIwvController(IWeatherViewController iwvController);
 
     void unregisterIwvController();
+
+    void registerGattService(IBleGattController mGatt);
+
+    void unregisterGattService();
+
+    /**
+     * 注册socket服务
+     * */
+
+    void registerSocketService(ISocketController isController);
+
+    void unregisterSocketService();
 
     WeatherInfo getWeatherInfo();
 

@@ -6,23 +6,29 @@
     android:orientation="vertical">
 
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="20dp"
-        android:text="Please provide ip infomation to connect!!!"/>
+<!--    <TextView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textSize="20dp"-->
+<!--        android:text="Please provide ip infomation to connect!!!"/>-->
 
-    <Button
-        android:id="@+id/wifi_connect_btn"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="wifi connect"/>
+<!--    <Button-->
+<!--        android:id="@+id/wifi_connect_btn"-->
+<!--        android:layout_width="200dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="wifi connect"/>-->
 
-    <Button
-        android:id="@+id/ip_setting_info_btn"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="ip setting info"/>
+<!--    <Button-->
+<!--        android:id="@+id/ip_setting_info_btn"-->
+<!--        android:layout_width="200dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="ip setting info"/>-->
+
+<!--    <Button-->
+<!--        android:id="@+id/wifi_close_btn"-->
+<!--        android:layout_width="200dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="clos wifi connect"/>-->
 
     <TextView
         android:layout_width="match_parent"
@@ -32,6 +38,7 @@
 
     <CheckBox
         android:id="@+id/weahter_service_cb"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="weather service"/>
@@ -39,9 +46,30 @@
 
     <CheckBox
         android:id="@+id/navigation_service_cb"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="navigation sevice"/>
 
+
+    <CheckBox
+        android:id="@+id/gatt_service_cb"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="gatt service"/>
+
+    <CheckBox
+        android:id="@+id/event_service_cb"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="event service"/>
+
+    <TextView
+        android:id="@+id/debug_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="unknown debug"/>
 
 </LinearLayout>

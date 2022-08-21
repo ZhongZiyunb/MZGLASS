@@ -5,18 +5,26 @@
       <map>
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/drawable/ic_launcher_background.xml" value="0.26979166666666665" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/drawable/tab_menu_channel.xml" value="0.26979166666666665" />
-        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_ble.xml" value="0.4" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_ble_demo.xml" value="0.140625" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_device_info.xml" value="0.1" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_navigate.xml" value="0.176" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_test.xml" value="0.264" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/activity_weather.xml" value="0.536" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/adapter_device_list.xml" value="0.140625" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/alertdialog_connection.xml" value="0.4" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/alertdialog_ipinfo.xml" value="0.264" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/asd.xml" value="0.2346014492753623" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/common/layout/asd.xml" value="0.1296875" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/route_inputs.xml" value="0.21614583333333334" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout/weather_activity.xml" value="0.1793478260869565" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_common/layout/icon_structure.xml" value="0.4" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_common/layout/settingitem_structure.xml" value="0.264" />
-        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_home.xml" value="0.4" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_common/layout/uuid_structure.xml" value="0.1" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_home.xml" value="0.152" />
         <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_services.xml" value="0.152" />
-        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_settings.xml" value="0.264" />
+        <entry key="..\:/Workspace/zzy_stock/MZGlass/app/src/main/res/layout_fragments/layout/fragment_settings.xml" value="0.4" />
       </map>
     </option>
   </component>

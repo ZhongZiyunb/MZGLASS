@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Binder;
 import android.util.Log;
 
+import androidx.viewpager.widget.PagerAdapter;
+
 import com.google.gson.Gson;
 import com.qweather.sdk.bean.base.Code;
 import com.qweather.sdk.bean.base.Lang;
@@ -11,19 +13,11 @@ import com.qweather.sdk.bean.base.Unit;
 import com.qweather.sdk.bean.weather.WeatherNowBean;
 import com.qweather.sdk.view.HeConfig;
 import com.qweather.sdk.view.QWeather;
+import com.zhong.mzglass.bluetooth.gatt.IBleGattController;
+import com.zhong.mzglass.socket.ISocketController;
 import com.zhong.mzglass.utils.Constants;
 import com.zhong.mzglass.utils.WeatherInfo;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.concurrent.BlockingDeque;
-
-import okio.Utf8;
 
 public class WeatherPresenter extends Binder implements IWeatherController {
 
@@ -31,6 +25,8 @@ public class WeatherPresenter extends Binder implements IWeatherController {
     Context mContext;
     public WeatherInfo info;
     IWeatherViewController miwvController = null;
+    IBleGattController mGatt = null;
+    ISocketController misController = null;
     private String TAG = "WeatherService";
 
     WeatherPresenter(Context context) {
@@ -48,6 +44,34 @@ public class WeatherPresenter extends Binder implements IWeatherController {
     public void unregisterIwvController() {
         if (miwvController != null) {
             miwvController = null;
+        }
+    }
+
+    @Override
+    public void registerGattService(IBleGattController Gatt) {
+        if (mGatt == null) {
+            mGatt = Gatt;
+        }
+    }
+
+    @Override
+    public void unregisterGattService() {
+        if (mGatt != null) {
+            mGatt = null;
+        }
+    }
+
+    @Override
+    public void registerSocketService(ISocketController isController) {
+        if (misController == null) {
+            misController = isController;
+        }
+    }
+
+    @Override
+    public void unregisterSocketService() {
+        if (misController != null) {
+            misController = null;
         }
     }
 
@@ -83,6 +107,14 @@ public class WeatherPresenter extends Binder implements IWeatherController {
             throw new RuntimeException("WEATHER STATE VALUE WRONG!");
 
         }
+    }
+
+    // 应该拼接好协议后再统一由socketService进行发送
+    // 建立socket通信，发送指令
+    private void sendCmd(String cmd) {
+
+        misController.socketSend(cmd);
+
     }
 
     private void queryWeather() {

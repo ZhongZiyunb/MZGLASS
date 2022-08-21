@@ -2,11 +2,82 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/fragment_home">
+    android:id="@+id/fragment_home"
+    android:orientation="vertical">
+
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/info_introduction_home"/>
+
+<!--    <TextView-->
+<!--        android:id="@+id/city"-->
+<!--        android:layout_marginTop="50dp"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/longitude"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/latitude"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/district"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/street"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/street_num"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="unknown"/>-->
+
+
+<!--    <Button-->
+<!--        android:id="@+id/home_btn1"-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="location test"/>-->
+
+<!--    <Button-->
+<!--        android:id="@+id/home_btn2"-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        android:layout_gravity="center"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="close location"/>-->
+
+    <Button
+        android:id="@+id/go_to_test_page"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="navigation test"/>
+
+    <Button
+        android:id="@+id/ble_test"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BLE TEST"/>
 
 </LinearLayout>
