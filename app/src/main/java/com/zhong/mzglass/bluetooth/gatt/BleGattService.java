@@ -32,5 +32,6 @@ public class BleGattService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mBleGattPresenter.close();
     }
 }

@@ -67,7 +67,9 @@ public class BleGattPresenter extends Binder implements IBleGattController {
                         }
                     }
                     mBleDeviceList.add(tmp_device_info);
-                    mGattViewController.updateListView(device.getName());
+                    if (mGattViewController != null) {
+                        mGattViewController.updateListView(device.getName());
+                    }
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "onReceive: finish discovery");
@@ -204,7 +206,6 @@ public class BleGattPresenter extends Binder implements IBleGattController {
             Log.d(TAG, "onConnectionStateChange: " + newState);
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
-                    Toast.makeText(mContext,"target device connected!",Toast.LENGTH_SHORT).show();
                     Log.d(TAG, "onConnectionStateChange: " + mTargetBleDevice.name + "connected");
                     gatt.discoverServices(); // 连接后开始搜索服务
                     break;
@@ -349,7 +350,7 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     private String dataWrap(String s, String func) {
         // TODO: 增加不同类型数据的封装功能
-        String res = "at" + " " + func+ " " + s;
+        String res = "at" + " " + func + " " + s;
         return res;
     }
 
@@ -358,12 +359,27 @@ public class BleGattPresenter extends Binder implements IBleGattController {
     @Override
     public void close() {
         //TODO:
-//        mBluetoothGatt.close();
+        Log.d(TAG, "close: ");
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.close();
+        }
+        if (mContext != null) {
+            try {
+                mContext.unregisterReceiver(receiver);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        mContext.unregisterReceiver(receiver);
+        try {
+            mContext.unregisterReceiver(receiver);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 }

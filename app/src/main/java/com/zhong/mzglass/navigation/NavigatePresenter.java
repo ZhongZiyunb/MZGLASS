@@ -77,10 +77,14 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     // TODO: navigate传入出发地和目的地
     // TODO: 简易版的导航就行了 不搞太复杂
     // TODO: 尽量这周搞定吧
+
+    private boolean first_in = false;
+
     @Override
     public void navigate(LatLonPoint end) throws AMapException {
 
         flag = true;
+
         // 指定UI发生改变
         // 利用SDK拿到导航信息
         if (end == null) {
@@ -107,16 +111,19 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 //        AmapNaviPage.getInstance().showRouteActivity(mContext.getApplicationContext(), params, NavigatePresenter.this);
 //        AMapNavi mAmapNavi = AMapNavi.getInstance(mContext);
 
+        if (first_in) {
+            mAMapNavi = AMapNavi.getInstance(mContext);
+            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
+            NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
 
-        mAMapNavi = AMapNavi.getInstance(mContext);
-        NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
-        NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
-
-        LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
-        LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
-        startEndAngle = calculatePositionAngle(startPoi,endPoi);
-        mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
-        mAMapNavi.addAMapNaviListener(this);
+            LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
+            LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
+            startEndAngle = calculatePositionAngle(startPoi, endPoi);
+            mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
+            mAMapNavi.addAMapNaviListener(this);
+        } else {
+            Toast.makeText(mContext,"locating now",Toast.LENGTH_SHORT).show();
+        }
 
     }
 
@@ -186,7 +193,8 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
             @Override
             public void onLocationChanged(AMapLocation aMapLocation) {
                 mylatlng = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
-//                p3 = new LatLng(aMapLocation.getLatitude(),aMapLocation.getLongitude());
+                Log.d(TAG, "onLocationChanged: "+mylatlng);
+                first_in = true;
             }
         });
 
@@ -289,6 +297,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         super.finalize();
         if (mLocationClient != null) {
             mLocationClient.stopLocation();
+            mAMapNavi.stopNavi();
         }
     }
 
