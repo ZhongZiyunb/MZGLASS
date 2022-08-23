@@ -1,9 +1,11 @@
 package com.zhong.mzglass.navigation;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -93,8 +95,8 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
     final private String TAG = "NavigateActivity";
     private ProgressDialog progDialog = null;
 
-    private LatLonPoint start_poi;
-    private LatLonPoint end_poi;
+    private LatLonPoint start_poi = null;
+    private LatLonPoint end_poi = null;
 
     private String start_location = "";
     private String end_location = "";
@@ -109,6 +111,34 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
     private PoiSearch.Query query_start;
     private PoiSearch.Query query_end;
 
+    private BroadcastReceiver naviReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Constants.START_NAVI.equals(action)) {
+                if (start_location.equals("")){
+                    if (end_poi != null) {
+                        try {
+                            mNavigateController.navigate(end_poi);
+                        } catch (AMapException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if (!end_location.equals("")) {
+                    if (start_poi != null && end_poi != null) {
+                        try {
+                            mNavigateController.navigate(start_poi,end_poi);
+                        } catch (AMapException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,6 +151,10 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
 
         MapsInitializer.updatePrivacyAgree(this, true);
         MapsInitializer.updatePrivacyShow(this, true, true);
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constants.START_NAVI);
+        registerReceiver(naviReceiver,intentFilter);
 
         initBind();
         initView();
@@ -247,25 +281,27 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
                 if (mNavigateController != null) {
 
                     if (start_location.equals("")) {
-
+                        end_poi = null;
                         doSearchQuery(end_location,Constants.SEARCH_END);
-                        try {
-                            mNavigateController.navigate(end_poi);
-                        } catch (AMapException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            mNavigateController.navigate(end_poi);
+//                        } catch (AMapException e) {
+//                            e.printStackTrace();
+//                        }
 
                     } else if (!end_location.equals("")) {
                         Log.d(TAG, "onClick: in");
+                        start_poi = null;
+                        end_poi = null;
                         doSearchQuery(start_location,Constants.SEARCH_START);
                         Log.d(TAG, "onClick: out");
                         doSearchQuery(end_location,Constants.SEARCH_END);
 
-                        try {
-                            mNavigateController.navigate(start_poi,end_poi);
-                        } catch (AMapException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            mNavigateController.navigate(start_poi,end_poi);
+//                        } catch (AMapException e) {
+//                            e.printStackTrace();
+//                        }
 
                     } else {
                         Toast.makeText(NavigateActivity.this,"请输入目的地",Toast.LENGTH_SHORT).show();
@@ -333,31 +369,6 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
 
     }
 
-
-    @Override
-    public void onInitNaviSuccess() {
-        super.onInitNaviSuccess();
-
-//        int strategy = 0;
-//        try {
-//            strategy = mAMapNavi.strategyConvert(true, false, false, false, false);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        AMapCarInfo carInfo = new AMapCarInfo();
-//        carInfo.setCarNumber("京DFZ588");
-//        mAMapNavi.setCarInfo(carInfo);
-////        mAMapNavi.calculateDriveRoute(sList, eList, mWayPointList, strategy);
-
-    }
-
-    @Override
-    public void onCalculateRouteSuccess(AMapCalcRouteResult aMapCalcRouteResult) {
-        super.onCalculateRouteSuccess(aMapCalcRouteResult);
-        mAMapNavi.startNavi(NaviType.GPS);
-    }
-
-
     void initBind() {
         Intent intent = new Intent(this, NavigateService.class);
 
@@ -389,7 +400,7 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
     protected void onResume() {
         super.onResume();
 
-//        mAMapNaviView.onResume();
+        mAMapNaviView.onResume();
     }
 
 
@@ -399,12 +410,8 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
         if (mConn != null) {
             unbindService(mConn);
         }
+        unregisterReceiver(naviReceiver);
         mAMapNaviView.onDestroy();
-    }
-
-    @Override
-    public void onInitNaviFailure() {
-
     }
 
     @Override
@@ -423,7 +430,8 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
                         // TODO:当搜索到了目标地点 选取其中一个进行导航 为了简化实现 取第一个作为目的地
                         // TODO:集成定位功能
                         start_poi = poiItems.get(0).getLatLonPoint();
-
+                        Intent intent = new Intent(Constants.START_NAVI);
+                        sendBroadcast(intent);
                     } else {
                         Toast.makeText(this,"query start failed",Toast.LENGTH_SHORT).show();
                     }
@@ -438,7 +446,8 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
                         // TODO:当搜索到了目标地点 选取其中一个进行导航 为了简化实现 取第一个作为目的地
                         // TODO:集成定位功能
                         end_poi = poiItems.get(0).getLatLonPoint();
-
+                        Intent intent = new Intent(Constants.START_NAVI);
+                        sendBroadcast(intent);
                     } else {
                         Toast.makeText(this,"query end failed",Toast.LENGTH_SHORT).show();
                     }

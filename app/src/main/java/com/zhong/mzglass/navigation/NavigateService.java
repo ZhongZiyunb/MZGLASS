@@ -18,14 +18,16 @@ import com.zhong.mzglass.socket.SocketService;
 public class NavigateService extends Service {
 
 
-    NavigatePresenter mNavigatePresenter = new NavigatePresenter(this);
+    NavigatePresenter mNavigatePresenter = null;
 //    SocketPresenter mSocketPresenter;
-    IBleGattController mBlePresenter;
+    IBleGattController mBlePresenter = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        mNavigatePresenter = new NavigatePresenter(this);
+        mNavigatePresenter.init();
         initBindService();
 
     }

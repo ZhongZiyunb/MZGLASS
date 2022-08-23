@@ -56,20 +56,23 @@ public class BleGattPresenter extends Binder implements IBleGattController {
                 // 判断是否配对过
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
                     // 添加到列表
-                    mBleDevices.add(device);
-                    BleDeviceInfo tmp_device_info = new BleDeviceInfo();
-                    tmp_device_info.name = device.getName();
-                    tmp_device_info.macAddress = device.getAddress();
-                    if (device.getUuids() != null) {
-                        for (ParcelUuid dd : device.getUuids()) {
-                            Log.d(TAG, "scanDevice: service:" + dd.toString());
-                            tmp_device_info.uuids.add(dd.toString());
-                        }
+                    if (!mBleDevices.contains(device)) {
+
+                        mBleDevices.add(device);
                     }
-                    mBleDeviceList.add(tmp_device_info);
-                    if (mGattViewController != null) {
-                        mGattViewController.updateListView(device.getName());
-                    }
+//                    BleDeviceInfo tmp_device_info = new BleDeviceInfo();
+//                    tmp_device_info.name = device.getName();
+//                    tmp_device_info.macAddress = device.getAddress();
+//                    if (device.getUuids() != null) {
+//                        for (ParcelUuid dd : device.getUuids()) {
+//                            Log.d(TAG, "scanDevice: service:" + dd.toString());
+//                            tmp_device_info.uuids.add(dd.toString());
+//                        }
+//                    }
+//                    mBleDeviceList.add(tmp_device_info);
+//                    if (mGattViewController != null) {
+//                        mGattViewController.updateListView(device.getName());
+//                    }
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "onReceive: finish discovery");
@@ -122,10 +125,15 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     }
 
+    private boolean first_in = true;
+
     @Override
     public void scanDevice() {
 
-        init();
+        if (first_in) {
+            init();
+            first_in = false;
+        }
 
         List<BluetoothDevice> GattDevices = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
         if (GattDevices!=null && GattDevices.size()>0){

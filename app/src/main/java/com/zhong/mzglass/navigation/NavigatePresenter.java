@@ -1,6 +1,9 @@
 package com.zhong.mzglass.navigation;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.MaskFilter;
@@ -33,6 +36,7 @@ import com.amap.api.navi.model.AMapNaviCameraInfo;
 import com.amap.api.navi.model.AMapNaviCross;
 import com.amap.api.navi.model.AMapNaviLocation;
 import com.amap.api.navi.model.AMapNaviRouteNotifyData;
+import com.amap.api.navi.model.AMapNaviToViaInfo;
 import com.amap.api.navi.model.AMapNaviTrafficFacilityInfo;
 import com.amap.api.navi.model.AMapServiceAreaInfo;
 import com.amap.api.navi.model.AimLessModeCongestionInfo;
@@ -61,16 +65,35 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     private Context mContext;
     private AMapNavi mAMapNavi;
 
-
     private double pixMapScaleFactor = -1;
     private double startEndAngle = 0;
     private double maxEastPixNum = 250;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Constants.START_WALK_NAVI.equals(action)) {
+                try {
+                    navi();
+                } catch (AMapException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
 
     NavigatePresenter(Context thisContext) {
         mContext = thisContext;
 
     }
 
+    public void init() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constants.START_WALK_NAVI);
+        mContext.registerReceiver(receiver,intentFilter);
+    }
 
     // TODO: 子线程和主线程之间通信
     // TODO: 导航事件更新
@@ -79,15 +102,32 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     // TODO: 尽量这周搞定吧
 
     private boolean first_in = false;
+    private LatLonPoint end_;
+    private void navi() throws AMapException {
+        if (first_in) {
+            mAMapNavi = AMapNavi.getInstance(mContext);
+            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
+            NaviLatLng endNaviPoi = new NaviLatLng(end_.getLatitude(), end_.getLongitude());
+
+            LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
+            LatLng endPoi = new LatLng(end_.getLatitude(), end_.getLongitude());
+            mAMapNavi.setUseInnerVoice(true, true);
+            mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
+            mAMapNavi.addAMapNaviListener(this);
+        } else {
+            Toast.makeText(mContext,"locating now",Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     @Override
     public void navigate(LatLonPoint end) throws AMapException {
 
+        end_ = end;
         flag = true;
-
         // 指定UI发生改变
         // 利用SDK拿到导航信息
-        if (end == null) {
+        if (end_ == null) {
             Toast.makeText(mContext, "请输入终点再进行导航", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -101,29 +141,19 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        AmapNaviParams params = new AmapNaviParams(new Poi("您当前位置", p3, ""), null, new Poi("您当前位置", p2, ""), AmapNaviType.WALK);
-//        p2 = new LatLng(39.942295, 116.335891);
-//        p3 = new LatLng(39.995576, 116.481288);
 
-//        AmapNaviParams params = new AmapNaviParams(new Poi("您当前位置", mylatlng, ""), null, new Poi("您当前位置", end, ""), AmapNaviType.WALK);
+//        if (first_in) {
+//            mAMapNavi = AMapNavi.getInstance(mContext);
+//            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
+//            NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
 //
-//        params.setUseInnerVoice(true);
-//        AmapNaviPage.getInstance().showRouteActivity(mContext.getApplicationContext(), params, NavigatePresenter.this);
-//        AMapNavi mAmapNavi = AMapNavi.getInstance(mContext);
-
-        if (first_in) {
-            mAMapNavi = AMapNavi.getInstance(mContext);
-            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
-            NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
-
-            LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
-            LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
-            startEndAngle = calculatePositionAngle(startPoi, endPoi);
-            mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
-            mAMapNavi.addAMapNaviListener(this);
-        } else {
-            Toast.makeText(mContext,"locating now",Toast.LENGTH_SHORT).show();
-        }
+//            LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
+//            LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
+//            mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
+//            mAMapNavi.addAMapNaviListener(this);
+//        } else {
+//            Toast.makeText(mContext,"locating now",Toast.LENGTH_SHORT).show();
+//        }
 
     }
 
@@ -150,7 +180,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
         LatLng startPoi = new LatLng(start.getLatitude(), start.getLongitude());
         LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
-        startEndAngle = calculatePositionAngle(startPoi,endPoi);
 
         mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
         mAMapNavi.addAMapNaviListener(this);
@@ -166,13 +195,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         if (mGatt != null) {
             Log.d(TAG, "onCalculateRouteSuccess: "+"导航开始辣!");
             mGatt.sendMessage("导航开始辣！", Constants.NOTICE);
-            //TODO:开始导航后在回调函数中进行信息发送
-            // 需要的信息为：
-            // ---- 初始的方位角 ->
-            // ---- 实时距离 ->
-            // ---- 下一步转向信息
-            // ---- 用户坐标在显示屏上的地点 ->location change的时候发送
-            // ---- 初始目的地在显示屏的地方
         }
     }
 
@@ -181,7 +203,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     //声明mLocationOption对象
     private AMapLocationClientOption mLocationOption;
     private LatLng mylatlng = new LatLng(39.942295, 116.335891);//故宫博物院
-//    private LatLng p3;//北京站
 
     //设置定位监听
     private void locationInit() throws Exception {
@@ -195,6 +216,8 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
                 mylatlng = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
                 Log.d(TAG, "onLocationChanged: "+mylatlng);
                 first_in = true;
+                Intent intent = new Intent(Constants.START_WALK_NAVI);
+                mContext.sendBroadcast(intent);
             }
         });
 
@@ -215,59 +238,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
     }
 
-    // 计算方位角
-    private double calculatePositionAngle(LatLng p1, LatLng p2) {
-        double angle = 0;
-        Log.d(TAG, "calculatePositionAngle: in");
-        double lat_res = p2.latitude - p1.latitude;
-        double lon_res = p2.longitude - p1.longitude;
-
-        // 与正北方向的夹角
-        angle = Math.atan2(lat_res,lon_res);
-        Log.d(TAG, "calculatePositionAngle: out");
-
-        return angle;
-    }
-
-    // 计算距离
-    private double calculatePositionDist(LatLng p1, LatLng p2) {
-        double dist = 0;
-        double r = 6371000;
-        double lat_res = p2.latitude - p1.latitude;
-        double lon_res = p2.longitude - p1.longitude;
-
-        double a = r * lat_res;
-        double b = r * lon_res;
-
-        dist = Math.sqrt(a * a + b * b);
-
-        return dist;
-
-    }
-
-
-    // 计算二维像素坐标
-    private ArrayList<Double> calPixPos(double lon,double lat) {
-
-        ArrayList<Double> pos = new ArrayList<Double>();
-        LatLng nowlatlng = new LatLng(lat,lon);
-        double angle = calculatePositionAngle(mylatlng,nowlatlng);
-//        double length = calculatePositionDist(mylatlng,nowlatlng);
-        double length = AMapUtils.calculateLineDistance(mylatlng,nowlatlng);
-
-        Log.d(TAG, "calPixPos: " + angle + " " + length);
-
-        double north = length * Math.cos(angle);
-        double east = length * Math.sin(angle);
-        pos.add(0,north);
-        pos.add(1,east);
-
-        return pos;
-    }
-
-
     // 用于绑定相关的控制器
-
     @Override
     public void registerViewController(INavigateViewController mNavigateView) {
         mNaviView = mNavigateView;
@@ -299,13 +270,9 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
             mLocationClient.stopLocation();
             mAMapNavi.stopNavi();
         }
-    }
-
-
-    // 导航相关的回调函数
-    @Override
-    public void onInitNaviFailure() {
-
+        if (mContext != null) {
+            mContext.unregisterReceiver(receiver);
+        }
     }
 
     // 发送导航信息
@@ -313,7 +280,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     public void onGetNavigationText(String s) {
         if (mGatt != null) {
 //            Log.d(TAG, "onGetNavigationText: ");
-
 //            Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
             // 发送导航转向信息
             Log.d(TAG, "onGetNavigationText: "+ s);
@@ -326,87 +292,36 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
     @Override
     public void onLocationChange(AMapNaviLocation aMapNaviLocation) {
-//        String A = String.valueOf(aMapNaviLocation.getBearing())
-//                + " " + String.valueOf(aMapNaviLocation.getRoadBearing())
-//                + " " + String.valueOf(aMapNaviLocation.getCoord().toString());
-//        Log.d(TAG, "onLocationChange:" + A);
 
         String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
-
         Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + caliMsg);
         mGatt.sendMessage(caliMsg,Constants.NAVI_CALI);
 
-        // TODO:发送角度方向标
-        // TODO: 发送地图二维像素坐标
-        // 先计算尺度标，然后更新目前位置相对于出发点的距离和角度
-        // 所以本质上需要实现一个计算方位角的函数
-
-        // 发送标定信息
-
-        double now_lon = aMapNaviLocation.getCoord().getLongitude();
-        double now_lat = aMapNaviLocation.getCoord().getLatitude();
-
-        ArrayList<Double> pixpos = calPixPos(now_lon,now_lat);
-
-        String msg = String.valueOf((pixpos.get(0)) * pixMapScaleFactor +
-                " " + (pixpos.get(1)) * pixMapScaleFactor) ;
-        Log.d(TAG, "onLocationChange: " + pixpos.get(0) + " " + pixpos.get(1)
-                                    + " " + pixMapScaleFactor);
-        Log.d(TAG, "onLocationChange: " + msg);
-        // 发送方位信息
-        if (pixMapScaleFactor != -1) {
-            mGatt.sendMessage(msg,Constants.NAVI_DRAW);
-        }
-
-
-        // 发送相对原点正北方向的坐标
-        // 剩下的由树莓派作图指定具体坐标
-//        Toast.makeText(mContext, A, Toast.LENGTH_SHORT).show();
     }
 
     boolean flag = true;
     @Override
     public void onNaviInfoUpdate(NaviInfo naviInfo) {
-
-        if (flag) {
-            pixMapScaleFactor = maxEastPixNum / (naviInfo.getPathRetainDistance() * Math.sin(startEndAngle));
-            String calimsg = String.valueOf(maxEastPixNum) + " "+ String.valueOf( maxEastPixNum / Math.tan(startEndAngle));
-            mGatt.sendMessage(calimsg,Constants.NAVI_CALI);
-            flag = false;
-        }
         // 发送导航时间信息
         // 发送导航距离信息
         String msg = String.valueOf(naviInfo.getPathRetainTime()) + " " +
-                String.valueOf(naviInfo.getPathRetainDistance());
+                String.valueOf(naviInfo.getPathRetainDistance()) + " " +
+                String.valueOf(naviInfo.getCurStepRetainTime()) + " " +
+                String.valueOf(naviInfo.getCurStepRetainDistance());
 
-        Log.d(TAG, "onNaviInfoUpdate: " + pixMapScaleFactor + " " + startEndAngle + " " +
-                naviInfo.getPathRetainDistance());
+        AMapNaviToViaInfo[] n = naviInfo.getToViaInfo();
+        Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getCurStepRetainDistance());
+        Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getCurStepRetainTime());
+        Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getPathRetainDistance());
+        Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getPathRetainTime());
+        Log.d(TAG, "onNaviInfoUpdate: " + msg);
+
         mGatt.sendMessage(msg, Constants.NAVI_TIME_DIST);
     }
-
-
-    // 定位信息
-    //
 
     @Override
     public void onStartNavi(int i) {
         Toast.makeText(mContext, "开始导航", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onCalculateRouteSuccess(int[] ints) {
-
-    }
-
-    @Override
-    public void onCalculateRouteFailure(int i) {
-
-    }
-
-
-    @Override
-    public void onArrivedWayPoint(int i) {
-
     }
 
 }

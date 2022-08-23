@@ -47,20 +47,20 @@ public class BaseActivity extends Activity implements AMapNaviListener, AMapNavi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        try {
-            mAMapNavi = AMapNavi.getInstance(getApplicationContext());
-            mAMapNavi.addAMapNaviListener(this);
-            mAMapNavi.addParallelRoadListener(this);
-            mAMapNavi.setUseInnerVoice(true, true);
-
-            //设置模拟导航的行车速度
-            mAMapNavi.setEmulatorNaviSpeed(75);
-            sList.add(mStartLatlng);
-            eList.add(mEndLatlng);
-        } catch (AMapException e) {
-            e.printStackTrace();
-        }
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        try {
+//            mAMapNavi = AMapNavi.getInstance(getApplicationContext());
+//            mAMapNavi.addAMapNaviListener(this);
+//            mAMapNavi.addParallelRoadListener(this);
+//            mAMapNavi.setUseInnerVoice(true, true);
+//
+//            //设置模拟导航的行车速度
+//            mAMapNavi.setEmulatorNaviSpeed(75);
+//            sList.add(mStartLatlng);
+//            eList.add(mEndLatlng);
+//        } catch (AMapException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -85,10 +85,10 @@ public class BaseActivity extends Activity implements AMapNaviListener, AMapNavi
         super.onDestroy();
 //        mAMapNaviView.onDestroy();
         //since 1.6.0 不再在naviview destroy的时候自动执行AMapNavi.stopNavi();请自行执行
-        if (mAMapNavi!=null){
-            mAMapNavi.stopNavi();
-            mAMapNavi.destroy();
-        }
+//        if (mAMapNavi!=null){
+//            mAMapNavi.stopNavi();
+//            mAMapNavi.destroy();
+//        }
 
     }
 

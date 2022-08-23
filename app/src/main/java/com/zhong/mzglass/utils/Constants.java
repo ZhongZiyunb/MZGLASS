@@ -39,6 +39,9 @@ public class Constants {
     static final public String UPDATE_CONN_STATE = "UPDATE_CONN_STATE";
     static final public String UPDATE_UUID_SERVICE = "UPDATE_UUID_SERVICE";
 
+    // navi broadcast
+    static final public String START_NAVI = "START_NAVI";
+    static final public String START_WALK_NAVI = "START_WALK_NAVI";
 
     // protocol
     static final public String NOTICE = "notice";
