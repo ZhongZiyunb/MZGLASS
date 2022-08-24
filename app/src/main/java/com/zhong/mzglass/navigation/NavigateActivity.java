@@ -283,11 +283,6 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
                     if (start_location.equals("")) {
                         end_poi = null;
                         doSearchQuery(end_location,Constants.SEARCH_END);
-//                        try {
-//                            mNavigateController.navigate(end_poi);
-//                        } catch (AMapException e) {
-//                            e.printStackTrace();
-//                        }
 
                     } else if (!end_location.equals("")) {
                         Log.d(TAG, "onClick: in");
@@ -296,12 +291,6 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
                         doSearchQuery(start_location,Constants.SEARCH_START);
                         Log.d(TAG, "onClick: out");
                         doSearchQuery(end_location,Constants.SEARCH_END);
-
-//                        try {
-//                            mNavigateController.navigate(start_poi,end_poi);
-//                        } catch (AMapException e) {
-//                            e.printStackTrace();
-//                        }
 
                     } else {
                         Toast.makeText(NavigateActivity.this,"请输入目的地",Toast.LENGTH_SHORT).show();
@@ -410,6 +399,7 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
         if (mConn != null) {
             unbindService(mConn);
         }
+        mNavigateController.finish();
         unregisterReceiver(naviReceiver);
         mAMapNaviView.onDestroy();
     }

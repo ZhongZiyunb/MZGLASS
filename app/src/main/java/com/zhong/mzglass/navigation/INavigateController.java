@@ -11,7 +11,6 @@ public interface INavigateController {
 
     void navigate(LatLonPoint start, LatLonPoint end) throws AMapException;
 
-
     void registerViewController(INavigateViewController mNavigateView);
 
     void unregisterViewController(INavigateViewController mNavigateView);
@@ -20,5 +19,5 @@ public interface INavigateController {
 
     void unregisterBleService(IBleGattController mSocket);
 
-
+    void finish();
 }

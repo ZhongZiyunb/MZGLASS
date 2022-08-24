@@ -50,11 +50,11 @@ public class Constants {
 
     static final public String WEATHER_INFO = "weather_info";
 
-    static final public String NAVI_DRAW = "navi_draw";
     static final public String NAVI_TIME_DIST = "navi_time_dist";
-//    static final public String NAVI_DIST = "navi_dist";
     static final public String NAVI_CALI = "navi_cali";
     static final public String NAVI_TEXT = "navi_text";
+    static final public String NAVI_START = "navi_start";
+    static final public String NAVI_STOP = "navi_stop";
 
     static final public String EVENT_CALL = "event_call";
     static final public String EVENT_SMS = "event_sms";
