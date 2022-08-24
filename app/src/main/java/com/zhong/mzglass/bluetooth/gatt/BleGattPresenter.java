@@ -57,26 +57,16 @@ public class BleGattPresenter extends Binder implements IBleGattController {
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
                     // 添加到列表
                     if (!mBleDevices.contains(device)) {
-
-                        mBleDevices.add(device);
+                        if (device.getName() != null) {
+                            mBleDevices.add(device);
+                        }
                     }
-//                    BleDeviceInfo tmp_device_info = new BleDeviceInfo();
-//                    tmp_device_info.name = device.getName();
-//                    tmp_device_info.macAddress = device.getAddress();
-//                    if (device.getUuids() != null) {
-//                        for (ParcelUuid dd : device.getUuids()) {
-//                            Log.d(TAG, "scanDevice: service:" + dd.toString());
-//                            tmp_device_info.uuids.add(dd.toString());
-//                        }
-//                    }
-//                    mBleDeviceList.add(tmp_device_info);
-//                    if (mGattViewController != null) {
-//                        mGattViewController.updateListView(device.getName());
-//                    }
+
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "onReceive: finish discovery");
                 for (BluetoothDevice d:mBleDevices) {
+                    mGattViewController.updateListView(d.getName());
                     Log.d(TAG, "onReceive: MAC:" + d.getAddress()+" NAME:" + d.getName());
                 }
             } else if (Constants.UPDATE_UUID.equals(action)) {
@@ -154,6 +144,7 @@ public class BleGattPresenter extends Binder implements IBleGattController {
         if (mBtAdapter.isDiscovering()) {
             mBtAdapter.cancelDiscovery();
         }
+
         mBtAdapter.startDiscovery();
 
         Log.d(TAG, "scanDevice: scan finished");
@@ -162,7 +153,7 @@ public class BleGattPresenter extends Binder implements IBleGattController {
             BleDeviceInfo tmp_device_info = new BleDeviceInfo();
             Log.d(TAG, "scanDevice: " + d.getAddress() + ":");
             Log.d(TAG, "scanDevice: " + d.getName() + ":");
-            mGattViewController.updateListView(d.getName());
+            //mGattViewController.updateListView(d.getName());
             if (d.getUuids() == null) continue;
             for (ParcelUuid dd:d.getUuids()) {
                 Log.d(TAG, "scanDevice: service:" + dd.toString());

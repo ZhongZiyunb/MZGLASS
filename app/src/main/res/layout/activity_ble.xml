@@ -34,6 +34,11 @@
         android:layout_height="wrap_content"
         android:text="detect connected device"/>
 
+    <Button
+        android:id="@+id/ble_connect_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="connect device"/>
 
     <ListView
         android:id="@+id/ble_list_view"

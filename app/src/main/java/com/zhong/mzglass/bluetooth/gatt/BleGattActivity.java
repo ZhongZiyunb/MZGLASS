@@ -108,6 +108,7 @@ public class BleGattActivity extends AppCompatActivity {
 
 
     };
+    private Button connect_btn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -142,6 +143,7 @@ public class BleGattActivity extends AppCompatActivity {
 
     private void initView() {
         detect_connected_device_btn = (Button) findViewById(R.id.ble_detect_device);
+        connect_btn = (Button) findViewById(R.id.ble_connect_device);
         ble_go_back = (Button) findViewById(R.id.ble_go_back_home);
         ble_target_device_name = (EditText) findViewById(R.id.ble_target_device_name);
         ble_mac = (TextView) findViewById(R.id.ble_mac);
@@ -164,7 +166,9 @@ public class BleGattActivity extends AppCompatActivity {
 
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), BleDevice.class);
-                intent.putExtra("deviceInfo", mIBleGattController.getDeviceInfo(i));
+                if (mIBleGattController.getDeviceInfo(i) != null){
+                    intent.putExtra("deviceInfo", mIBleGattController.getDeviceInfo(i));
+                }
                 startActivity(intent);
                 Log.d(TAG, "onItemClick: click happen");
 
@@ -179,11 +183,22 @@ public class BleGattActivity extends AppCompatActivity {
                     Log.d(TAG, "onClick: in click");
 
                     mIBleGattController.scanDevice();
-                    mIBleGattController.connect(ble_target_device_name.getText().toString());
+//                    mIBleGattController.connect(ble_target_device_name.getText().toString());
 
                 }
             }
         });
+
+        connect_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String name = ble_target_device_name.getText().toString();
+                if (!name.equals("")){
+                    mIBleGattController.connect(name);
+                }
+            }
+        });
+
 
         ble_go_back.setOnClickListener(new View.OnClickListener() {
             @Override
