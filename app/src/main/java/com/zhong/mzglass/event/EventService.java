@@ -131,6 +131,7 @@ public class EventService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        initBind();
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction("android.intent.action.PHONE_STATE");
         mIntentFilter.addAction("android.intent.action.NEW_OUTGOING_CALL");
@@ -145,9 +146,7 @@ public class EventService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-
-        initBind();
-
+        
         return null;
     }
 
