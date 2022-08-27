@@ -59,6 +59,7 @@ public class BleGattPresenter extends Binder implements IBleGattController {
                     if (!mBleDevices.contains(device)) {
                         if (device.getName() != null) {
                             mBleDevices.add(device);
+                            addToDeviceList(device);
                         }
                     }
 
@@ -66,9 +67,11 @@ public class BleGattPresenter extends Binder implements IBleGattController {
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Log.d(TAG, "onReceive: finish discovery");
                 for (BluetoothDevice d:mBleDevices) {
-                    mGattViewController.updateListView(d.getName());
-                    Log.d(TAG, "onReceive: MAC:" + d.getAddress()+" NAME:" + d.getName());
+                    if (mGattViewController != null) {
+                        mGattViewController.updateListView(d.getName());
+                    }
                 }
+                dumpDeviceList();
             } else if (Constants.UPDATE_UUID.equals(action)) {
                 if (mGattViewController != null) {
                     mGattViewController.updateName(intent.getStringExtra("DATA"));
@@ -93,9 +96,37 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     }
 
-    // 进行初始化
-    void init() {
+    void addToDeviceList(BluetoothDevice device) {
+        BleDeviceInfo tmp_device_info = new BleDeviceInfo();
 
+        if (device.getUuids() != null) {
+            for (ParcelUuid dd : device.getUuids()) {
+                Log.d(TAG, "scanDevice: service:" + dd.toString());
+                tmp_device_info.uuids.add(dd.toString());
+            }
+            tmp_device_info.name = device.getName();
+            tmp_device_info.macAddress = device.getAddress();
+            mBleDeviceList.add(tmp_device_info);
+        }
+    }
+
+    void dumpDeviceList() {
+        Log.d(TAG, "dumpDeviceList: ============================");
+        for(BluetoothDevice d:mBleDevices) {
+            Log.d(TAG, "=====================================");
+            Log.d(TAG, "scanDevice: NAME:" + d.getName() + ":");
+            Log.d(TAG, "scanDevice: MAC:" + d.getAddress() + ":");
+
+            if (d.getUuids() == null) continue;
+            for (ParcelUuid dd:d.getUuids()) {
+                Log.d(TAG, "scanDevice: service:" + dd.toString());
+            }
+        }
+    }
+
+    void registerBroadcast() {
+
+        Log.d(TAG, "registerBroadcast:" );
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
@@ -103,6 +134,16 @@ public class BleGattPresenter extends Binder implements IBleGattController {
         intentFilter.addAction("UPDATE_CONN_STATE");
         intentFilter.addAction("UPDATE_UUID_SERVICE");
         mContext.registerReceiver(receiver,intentFilter);
+    }
+
+    private boolean first_in = true;
+    // 进行初始化
+    void init() {
+
+        if (first_in) {
+            registerBroadcast();
+            first_in = false;
+        }
 
         mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
         mBtAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -115,28 +156,30 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     }
 
-    private boolean first_in = true;
-
     @Override
     public void scanDevice() {
 
-        if (first_in) {
-            init();
-            first_in = false;
-        }
+        init();
 
         List<BluetoothDevice> GattDevices = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
         if (GattDevices!=null && GattDevices.size()>0){
-            mBleDevices.addAll(GattDevices);
+            for (int i=0;i<GattDevices.size();i++) {
+                if (!mBleDevices.contains(GattDevices.get(i))) {
+                    mBleDevices.add(GattDevices.get(i));
+                    addToDeviceList(GattDevices.get(i));
+                }
+            }
         }
         Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
         // 判断是否有配对过的设备
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 // 遍历到列表中
-                mBleDevices.add(device);
-                Log.d(TAG, "scanDevice: found" + device.getName());
-
+                if (!mBleDevices.contains(device)) {
+                    mBleDevices.add(device);
+                    addToDeviceList(device);
+                    Log.d(TAG, "scanDevice: found" + device.getName());
+                }
             }
         }
 
@@ -147,21 +190,16 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
         mBtAdapter.startDiscovery();
 
-        Log.d(TAG, "scanDevice: scan finished");
         // 显示每个结果的名称
         for(BluetoothDevice d:mBleDevices) {
-            BleDeviceInfo tmp_device_info = new BleDeviceInfo();
-            Log.d(TAG, "scanDevice: " + d.getAddress() + ":");
-            Log.d(TAG, "scanDevice: " + d.getName() + ":");
+            Log.d(TAG, "=====================================");
+            Log.d(TAG, "scanDevice: NAME:" + d.getName() + ":");
+            Log.d(TAG, "scanDevice: MAC:" + d.getAddress() + ":");
             //mGattViewController.updateListView(d.getName());
             if (d.getUuids() == null) continue;
             for (ParcelUuid dd:d.getUuids()) {
                 Log.d(TAG, "scanDevice: service:" + dd.toString());
-                tmp_device_info.uuids.add(dd.toString());
             }
-            tmp_device_info.name = d.getName();
-            tmp_device_info.macAddress = d.getAddress();
-            mBleDeviceList.add(tmp_device_info);
         }
     }
 
@@ -169,14 +207,47 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     @Override
     public void connect(String s) {
+
         // 连接指定s
         boolean flag = false;
+        init();
+        dumpDeviceList();
+        // 再加载一次缓存中的
+        List<BluetoothDevice> GattDevices = mBluetoothManager.getConnectedDevices(BluetoothProfile.GATT);
+        if (GattDevices!=null && GattDevices.size()>0){
+            for (int i=0;i<GattDevices.size();i++) {
+                if (!mBleDevices.contains(GattDevices.get(i))) {
+                    mBleDevices.add(GattDevices.get(i));
+                    addToDeviceList(GattDevices.get(i));
+                }
+            }
+        }
+        Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
+        // 判断是否有配对过的设备
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                // 遍历到列表中
+                if (!mBleDevices.contains(device)) {
+                    mBleDevices.add(device);
+                    addToDeviceList(device);
+                    Log.d(TAG, "scanDevice: found" + device.getName());
+                }
+            }
+        }
+
+        // 在list中查找对应的设备
         for (BluetoothDevice d:mBleDevices) {
             if (d.getName() == null) continue;
             if (d.getName().equals(s)) {
                 if (d.getAddress() != null) {
                     mTargetBleDevice.macAddress = d.getAddress();
                     mTargetBleDevice.name = d.getName();
+                    String[] a;
+                    if (d.getUuids() != null) {
+                        for (ParcelUuid uuid : d.getUuids()) {
+                            mTargetBleDevice.uuids.add(uuid.toString());
+                        }
+                    }
                     Log.d(TAG, "connect: found target device:" + d.getName());
                     flag = true;
                 }
@@ -190,7 +261,9 @@ public class BleGattPresenter extends Binder implements IBleGattController {
             Log.d(TAG, "connect: no such device name or unavailable");
             return;
         }
-        mGattViewController.updateListView(mTargetBleDevice.name);
+        if (mGattViewController != null){
+            mGattViewController.updateListView(mTargetBleDevice.name);
+        }
         Log.d(TAG, "connect: " + mTargetBleDevice.name);
         Log.d(TAG, "connecting: " + mTargetBleDevice.name);
         BluetoothDevice btDevice = mBtAdapter.getRemoteDevice(mTargetBleDevice.macAddress);
@@ -237,7 +310,13 @@ public class BleGattPresenter extends Binder implements IBleGattController {
                         for (BluetoothGattCharacteristic c: btGattService.getCharacteristics()) {
                             Log.d(TAG, "onServicesDiscovered: " + c.getUuid().toString());
                             mTargetBleDevice.uuids.add("character: "+ c.getUuid().toString());
-
+                            // 将新的服务UUID加入进来
+                            for (int i=0;i<mBleDeviceList.size();i++) {
+                                if (!mBleDeviceList.get(i).name.equals(mTargetBleDevice.name)) continue;
+                                if (!mBleDeviceList.get(i).uuids.contains(c.getUuid().toString())) {
+                                    mBleDeviceList.get(i).uuids.add(c.getUuid().toString());
+                                }
+                            }
                         }
                         Log.d(TAG, "onServicesDiscovered: chracter:" + btGattService.getCharacteristics().toString());
                         if(btGattService.getUuid().toString().equals(Constants.UUID_UART_SERVICE)) {

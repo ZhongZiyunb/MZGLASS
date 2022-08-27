@@ -146,7 +146,7 @@ public class EventService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        
+
         return null;
     }
 

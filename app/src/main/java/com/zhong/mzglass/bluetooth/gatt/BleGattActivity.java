@@ -138,6 +138,7 @@ public class BleGattActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mIGattViewController = null;
+            mIBleGattController.unregisterViewController();
         }
     };
 
@@ -183,7 +184,6 @@ public class BleGattActivity extends AppCompatActivity {
                     Log.d(TAG, "onClick: in click");
 
                     mIBleGattController.scanDevice();
-//                    mIBleGattController.connect(ble_target_device_name.getText().toString());
 
                 }
             }
@@ -212,9 +212,9 @@ public class BleGattActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String s = ble_send_message.getText().toString();
                 if (!s.equals("")) {
-                    mIBleGattController.sendMessage(s,Constants.TEST);
+                    mIBleGattController.sendMessage(s,Constants.NOTICE);
                 } else {
-                    mIBleGattController.sendMessage(s, Constants.TEST);
+                    mIBleGattController.sendMessage("嘉悦郝帅", Constants.NOTICE);
                 }
             }
         });
