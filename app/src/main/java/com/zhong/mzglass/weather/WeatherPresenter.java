@@ -155,7 +155,8 @@ public class WeatherPresenter extends Binder implements IWeatherController {
                     }
 
                     if (mGatt != null) {
-                        String msg = info.weather + " " + info.temperature;
+                        String msg = info.weather + " " + info.temperature + " " + info.windForce + " "
+                                    + info.windDirection;
                         mGatt.sendMessage(msg,Constants.WEATHER_INFO);
                     }
 

@@ -51,6 +51,7 @@ public class Constants {
     static final public String WEATHER_INFO = "weather_info";
 
     static final public String NAVI_TIME_DIST = "navi_time_dist";
+    static final public String NAVI_ANGLE = "navi_angle";
     static final public String NAVI_CALI = "navi_cali";
     static final public String NAVI_TEXT = "navi_text";
     static final public String NAVI_START = "navi_start";

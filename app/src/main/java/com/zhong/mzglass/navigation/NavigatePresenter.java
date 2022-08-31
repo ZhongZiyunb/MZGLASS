@@ -36,8 +36,11 @@ import com.amap.api.navi.model.AMapLaneInfo;
 import com.amap.api.navi.model.AMapModelCross;
 import com.amap.api.navi.model.AMapNaviCameraInfo;
 import com.amap.api.navi.model.AMapNaviCross;
+import com.amap.api.navi.model.AMapNaviLink;
 import com.amap.api.navi.model.AMapNaviLocation;
+import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviRouteNotifyData;
+import com.amap.api.navi.model.AMapNaviStep;
 import com.amap.api.navi.model.AMapNaviToViaInfo;
 import com.amap.api.navi.model.AMapNaviTrafficFacilityInfo;
 import com.amap.api.navi.model.AMapServiceAreaInfo;
@@ -98,14 +101,13 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     private void navi() throws AMapException {
         if (first_in) {
             mAMapNavi = AMapNavi.getInstance(mContext);
-            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.latitude, mylatlng.longitude);
+            NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.getLatitude(), mylatlng.getLongitude());
             NaviLatLng endNaviPoi = new NaviLatLng(end_.getLatitude(), end_.getLongitude());
 
-            LatLng startPoi = new LatLng(mylatlng.latitude, mylatlng.longitude);
-            LatLng endPoi = new LatLng(end_.getLatitude(), end_.getLongitude());
             mAMapNavi.setUseInnerVoice(true, true);
             mAMapNavi.calculateWalkRoute(startNaviPoi, endNaviPoi);
             mAMapNavi.addAMapNaviListener(this);
+
         } else {
             Toast.makeText(mContext,"locating now",Toast.LENGTH_SHORT).show();
         }
@@ -149,9 +151,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         }
 
         // FOR DEBUG
-        mylatlng = new LatLng(start.getLatitude(),start.getLongitude());
-
-
+        mylatlng = new NaviLatLng(start.getLatitude(),start.getLongitude());
         mAMapNavi = AMapNavi.getInstance(mContext);
         NaviLatLng startNaviPoi = new NaviLatLng(start.getLatitude(), start.getLongitude());
         NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
@@ -181,8 +181,8 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     private AMapLocationClient mLocationClient;
     //声明mLocationOption对象
     private AMapLocationClientOption mLocationOption;
-    private LatLng mylatlng = new LatLng(39.942295, 116.335891);//故宫博物院
-
+    private NaviLatLng mylatlng = new NaviLatLng(39.942295, 116.335891);//故宫博物院
+    private NaviLatLng curLatLng = null;
     //设置定位监听
     private void locationInit() throws Exception {
 
@@ -192,7 +192,8 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         mLocationClient.setLocationListener(new AMapLocationListener() {
             @Override
             public void onLocationChanged(AMapLocation aMapLocation) {
-                mylatlng = new LatLng(aMapLocation.getLatitude(), aMapLocation.getLongitude());
+                mylatlng.setLatitude(aMapLocation.getLatitude());
+                mylatlng.setLongitude(aMapLocation.getLongitude());
                 Log.d(TAG, "onLocationChanged: "+mylatlng);
                 first_in = true;
                 Intent intent = new Intent(Constants.START_WALK_NAVI);
@@ -213,7 +214,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
         // 启动定位
         mLocationClient.startLocation();
-
 
     }
 
@@ -246,6 +246,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     public void finish() {
         if (mGatt != null) {
             mGatt.sendMessage("退出导航辣！",Constants.NAVI_STOP);
+            mAMapNavi.stopNavi();
         }
     }
 
@@ -259,6 +260,26 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         if (mContext != null) {
             mContext.unregisterReceiver(receiver);
         }
+    }
+
+    // 计算角度的工具
+    double getBearing(NaviLatLng start, NaviLatLng end) {
+        double rad = Math.PI / 180,
+                lat1 = start.getLatitude() * rad,
+                lat2 = end.getLatitude() * rad,
+                lon1 = start.getLongitude() * rad,
+                lon2 = end.getLongitude() * rad;
+        double a = Math.sin(lon2 - lon1) * Math.cos(lat2);
+        double b = Math.cos(lat1) * Math.sin(lat2) -
+                Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+
+        return radiansToDegrees(Math.atan2(a, b));
+    }
+
+    //
+    double radiansToDegrees(double radians) {
+        double degrees = radians % (2 * Math.PI);
+        return degrees * 180 / Math.PI;
     }
 
     // 发送导航信息
@@ -279,10 +300,31 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     @Override
     public void onLocationChange(AMapNaviLocation aMapNaviLocation) {
 
-        String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
-        Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + caliMsg);
-        if (mGatt != null) {
-            mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+//        NaviLatLng nowLatLng = aMapNaviLocation.getCoord();
+        mylatlng = aMapNaviLocation.getCoord();
+
+        if (curLatLng != null) {
+            // double theta = getBearing(mylatlng,curLatLng);
+            Log.d(TAG, "onLocationChange: myLatLng"+ mylatlng);
+            Log.d(TAG, "onLocationChange: curLatLng"+ curLatLng);
+
+            String angleMsg = String.valueOf(aMapNaviLocation.getBearing() - aMapNaviLocation.getRoadBearing());
+            String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+
+            Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
+            Log.d(TAG, "onLocationChange: " + Constants.NAVI_ANGLE + " " + angleMsg);
+            Log.d(TAG, "onLocationChange: " + aMapNaviLocation.getRoadBearing());
+
+            if (mGatt != null) {
+                mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                mGatt.sendMessage(angleMsg, Constants.NAVI_ANGLE);
+            }
+        } else {
+            if (mGatt != null) {
+                String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+                mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+            }
+            Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " wait navi info update");
         }
     }
 
@@ -296,12 +338,48 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
                 String.valueOf(naviInfo.getCurStepRetainTime()) + " " +
                 String.valueOf(naviInfo.getCurStepRetainDistance());
 
-        AMapNaviToViaInfo[] n = naviInfo.getToViaInfo();
+
         Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getCurStepRetainDistance());
         Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getCurStepRetainTime());
         Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getPathRetainDistance());
         Log.d(TAG, "onNaviInfoUpdate: " + naviInfo.getPathRetainTime());
         Log.d(TAG, "onNaviInfoUpdate: " + msg);
+
+
+        AMapNaviPath naviPath =  mAMapNavi.getNaviPath();
+        List<NaviLatLng> coordList = naviPath.getCoordList();
+        AMapNaviStep step = naviPath.getSteps().get(naviInfo.getCurStep());
+        AMapNaviLink link = step.getLinks().get(naviInfo.getCurLink());
+
+        // TODO:应该是当前坐标和下一个link的夹角才对
+        Log.d(TAG, "onNaviInfoUpdate: " + naviPath.getCoordList().size());
+        Log.d(TAG, "onNaviInfoUpdate: " + naviPath.getSteps().size());
+        Log.d(TAG, "onNaviInfoUpdate: " + step.getLinks().size());
+        Log.d(TAG, "onNaviInfoUpdate: " + step.getLength());
+        Log.d(TAG, "onNaviInfoUpdate: " + link.getLength());
+        Log.d(TAG, "onNaviInfoUpdate: " + link.getCoords().size());
+
+        // TODO: 先测试再看问题
+        if (link.getCoords().size() > naviInfo.getCurPoint() + 1) {
+            curLatLng = link.getCoords().get(naviInfo.getCurPoint() + 1);
+        } else if (step.getLinks().size() > naviInfo.getCurLink() + 1) {
+            link = step.getLinks().get(naviInfo.getCurLink() + 1);
+            curLatLng = link.getCoords().get(0);
+        } else {
+            curLatLng = link.getCoords().get(naviInfo.getCurPoint());
+        }
+
+//        NaviLatLng start = mylatlng;
+//        double theta = getBearing(start,link.getCoords().get(naviInfo.getCurPoint()));
+//        double thetata = getBearing(link.getCoords().get(0),link.getCoords().get(1));
+//
+//
+//        Log.d(TAG, "onNaviInfoUpdate: "+ theta);
+//        Log.d(TAG, "onNaviInfoUpdate: "+ thetata);
+//        Log.d(TAG, "onNaviInfoUpdate: "+ start);
+//        Log.d(TAG, "onNaviInfoUpdate: "+ naviInfo.getCurPoint());
+//        Log.d(TAG, "onNaviInfoUpdate: "+ link.getCoords().get(0));
+//        Log.d(TAG, "onNaviInfoUpdate: "+ link.getCoords().get(naviInfo.getCurPoint()));
 
         if (mGatt != null) {
             mGatt.sendMessage(msg, Constants.NAVI_TIME_DIST);
