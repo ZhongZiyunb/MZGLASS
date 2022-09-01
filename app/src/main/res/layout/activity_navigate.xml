@@ -57,12 +57,33 @@
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="navi mode"
+            android:text="bear"
             android:textAlignment="center"
             android:layout_gravity="center"/>
 
         <TextView
-            android:id="@+id/navigate_motion"
+            android:id="@+id/navigate_bearing"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="road_bear"
+            android:textAlignment="center"
+            android:layout_gravity="center"/>
+
+        <TextView
+            android:id="@+id/navigate_road_bearing"
             android:layout_width="200dp"
             android:layout_height="30dp"
             android:layout_gravity="center"/>

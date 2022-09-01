@@ -86,7 +86,7 @@ import java.util.concurrent.BlockingDeque;
 
 public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSearchListener {
 
-    private INavigateViewController mNavigateViewController;
+
     private INavigateController mNavigateController;
     private AutoCompleteTextView edtxt_start;
     private AutoCompleteTextView edtxt_destination;
@@ -136,7 +136,19 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
             }
         }
     };
+    private INavigateViewController mNavigateViewController = new INavigateViewController() {
+        @Override
+        public void updateView(String bear, String road_bear) {
+            if (edtxt_bear!=null && edtxt_road_bear!=null) {
+                edtxt_bear.setText(bear);
+                edtxt_road_bear.setText(road_bear);
+            }
+        }
+    };
 
+
+    private TextView edtxt_bear;
+    private TextView edtxt_road_bear;
 
 
     @Override
@@ -165,7 +177,10 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
         // 相关
         edtxt_start = (AutoCompleteTextView) findViewById(R.id.navigate_start);
         edtxt_destination = (AutoCompleteTextView) findViewById(R.id.navigate_destination);
-        edtxt_motion = (TextView) findViewById(R.id.navigate_motion);
+        // edtxt_motion = (TextView) findViewById(R.id.navigate_motion);
+        edtxt_bear = (TextView) findViewById(R.id.navigate_bearing);
+        edtxt_road_bear = (TextView) findViewById(R.id.navigate_road_bearing);
+
         start_navigate = (Button) findViewById(R.id.start_navigate);
 
         // 获取出发点信息
@@ -399,6 +414,7 @@ public class NavigateActivity extends BaseActivity implements PoiSearch.OnPoiSea
         if (mConn != null) {
             unbindService(mConn);
         }
+        Log.d(TAG, "onDestroy: ");
         mNavigateController.finish();
         unregisterReceiver(naviReceiver);
         mAMapNaviView.onDestroy();

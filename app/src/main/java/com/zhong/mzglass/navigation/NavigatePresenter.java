@@ -1,5 +1,7 @@
 package com.zhong.mzglass.navigation;
 
+import static android.content.Context.SENSOR_SERVICE;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +9,8 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.MaskFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Binder;
 import android.util.Log;
 import android.view.View;
@@ -61,6 +65,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+
+
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
 public class NavigatePresenter extends BaseNaviPresenter implements INavigateController {
 
     private static final String TAG = "NavigatePresenter";
@@ -69,6 +80,8 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
     private Context mContext;
     private AMapNavi mAMapNavi;
+
+    private boolean is_cali_finish = false;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -90,16 +103,17 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
     }
 
+
     public void init() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Constants.START_WALK_NAVI);
         mContext.registerReceiver(receiver,intentFilter);
     }
 
-    private boolean first_in = false;
+    private boolean locating_finished = false;
     private LatLonPoint end_;
     private void navi() throws AMapException {
-        if (first_in) {
+        if (locating_finished) {
             mAMapNavi = AMapNavi.getInstance(mContext);
             NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.getLatitude(), mylatlng.getLongitude());
             NaviLatLng endNaviPoi = new NaviLatLng(end_.getLatitude(), end_.getLongitude());
@@ -156,7 +170,6 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         NaviLatLng startNaviPoi = new NaviLatLng(start.getLatitude(), start.getLongitude());
         NaviLatLng endNaviPoi = new NaviLatLng(end.getLatitude(), end.getLongitude());
 
-
         LatLng startPoi = new LatLng(start.getLatitude(), start.getLongitude());
         LatLng endPoi = new LatLng(end.getLatitude(), end.getLongitude());
 
@@ -195,7 +208,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
                 mylatlng.setLatitude(aMapLocation.getLatitude());
                 mylatlng.setLongitude(aMapLocation.getLongitude());
                 Log.d(TAG, "onLocationChanged: "+mylatlng);
-                first_in = true;
+                locating_finished = true;
                 Intent intent = new Intent(Constants.START_WALK_NAVI);
                 mContext.sendBroadcast(intent);
             }
@@ -246,7 +259,16 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     public void finish() {
         if (mGatt != null) {
             mGatt.sendMessage("退出导航辣！",Constants.NAVI_STOP);
-            mAMapNavi.stopNavi();
+        }
+        Log.d(TAG, "finish: ok");
+        mAMapNavi.stopNavi();
+        mAMapNavi.stopGPS();
+        mAMapNavi.stopSpeak();
+        if (mLocationClient != null) {
+            mLocationClient.stopLocation();
+        }
+        if (mContext != null) {
+            mContext.unregisterReceiver(receiver);
         }
     }
 
@@ -255,8 +277,11 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         super.finalize();
         if (mLocationClient != null) {
             mLocationClient.stopLocation();
-            mAMapNavi.stopNavi();
         }
+        Log.d(TAG, "finalize: ok");
+        mAMapNavi.stopNavi();
+        mAMapNavi.stopGPS();
+        mAMapNavi.stopSpeak();
         if (mContext != null) {
             mContext.unregisterReceiver(receiver);
         }
@@ -304,25 +329,36 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         mylatlng = aMapNaviLocation.getCoord();
 
         if (curLatLng != null) {
-            // double theta = getBearing(mylatlng,curLatLng);
+            double theta = getBearing(mylatlng,curLatLng);
             Log.d(TAG, "onLocationChange: myLatLng"+ mylatlng);
             Log.d(TAG, "onLocationChange: curLatLng"+ curLatLng);
 
-            String angleMsg = String.valueOf(aMapNaviLocation.getBearing() - aMapNaviLocation.getRoadBearing());
-            String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+            String angleMsg = String.valueOf(theta);
 
-            Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
             Log.d(TAG, "onLocationChange: " + Constants.NAVI_ANGLE + " " + angleMsg);
-            Log.d(TAG, "onLocationChange: " + aMapNaviLocation.getRoadBearing());
+            Log.d(TAG, "onLocationChange: bearing" + aMapNaviLocation.getRoadBearing());
+
+            if (mNaviView!=null){
+                mNaviView.updateView(String.valueOf(aMapNaviLocation.getBearing()),angleMsg);
+            }
 
             if (mGatt != null) {
-                mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                if (!is_cali_finish){
+                    is_cali_finish = true;
+                    String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+                    Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
+                    mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                }
                 mGatt.sendMessage(angleMsg, Constants.NAVI_ANGLE);
             }
         } else {
             if (mGatt != null) {
-                String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
-                mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                if (!is_cali_finish){
+                    is_cali_finish = true;
+                    String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+                    Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
+                    mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                }
             }
             Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " wait navi info update");
         }
