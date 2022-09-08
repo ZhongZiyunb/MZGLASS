@@ -75,8 +75,8 @@ public class EventService extends Service {
                     for (SmsMessage temp : msg) {
                         content.append(temp.getMessageBody());
                         phoneNumber.append(temp.getOriginatingAddress());
-                        receiveData.append(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
-                                .format(new Date(temp.getTimestampMillis())));
+                        // receiveData.append(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
+                              //  .format(new Date(temp.getTimestampMillis())));
                     }
                     /**
                      * 这里还可以进行好多操作，比如我们根据手机号进行拦截（取消广播继续传播）等等

@@ -408,7 +408,11 @@ public class BleGattPresenter extends Binder implements IBleGattController {
 
     @Override
     public BleDeviceInfo getDeviceInfo(int i) {
-        return mBleDeviceList.get(i);
+        if (i < mBleDeviceList.size()) {
+            return mBleDeviceList.get(i);
+        } else {
+            return null;
+        }
     }
 
     @Override

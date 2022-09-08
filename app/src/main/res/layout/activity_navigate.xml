@@ -57,7 +57,7 @@
         <TextView
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="bear"
+            android:text="dist"
             android:textAlignment="center"
             android:layout_gravity="center"/>
 

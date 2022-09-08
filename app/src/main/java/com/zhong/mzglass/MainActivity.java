@@ -51,6 +51,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         Log.d(TAG, "onCreate: in");
 
+        //动态申请权限
         if (ActivityCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.READ_SMS)!= PackageManager.PERMISSION_GRANTED||
                 ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.RECEIVE_SMS)
@@ -72,7 +73,25 @@ public class MainActivity extends BaseActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
                     1);
         }
-        //动态申请权限
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.BLUETOOTH)
+                != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.BLUETOOTH},
+                    1);
+        }
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.BLUETOOTH_ADMIN)
+                != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.BLUETOOTH_ADMIN},
+                    1);
+        }
+        if (ActivityCompat.checkSelfPermission(MainActivity.this,Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                    1);
+        }
 
         initBind();
         initView();

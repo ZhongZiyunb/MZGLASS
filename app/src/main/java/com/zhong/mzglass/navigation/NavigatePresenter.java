@@ -100,7 +100,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
 
     NavigatePresenter(Context thisContext) {
         mContext = thisContext;
-
+        coord_index = 1;
     }
 
 
@@ -113,6 +113,7 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     private boolean locating_finished = false;
     private LatLonPoint end_;
     private void navi() throws AMapException {
+        coord_index = 1;
         if (locating_finished) {
             mAMapNavi = AMapNavi.getInstance(mContext);
             NaviLatLng startNaviPoi = new NaviLatLng(mylatlng.getLatitude(), mylatlng.getLongitude());
@@ -261,9 +262,11 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
             mGatt.sendMessage("退出导航辣！",Constants.NAVI_STOP);
         }
         Log.d(TAG, "finish: ok");
-        mAMapNavi.stopNavi();
-        mAMapNavi.stopGPS();
-        mAMapNavi.stopSpeak();
+        if (mAMapNavi != null) {
+            mAMapNavi.stopNavi();
+            mAMapNavi.stopGPS();
+            mAMapNavi.stopSpeak();
+        }
         if (mLocationClient != null) {
             mLocationClient.stopLocation();
         }
@@ -279,9 +282,11 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
             mLocationClient.stopLocation();
         }
         Log.d(TAG, "finalize: ok");
-        mAMapNavi.stopNavi();
-        mAMapNavi.stopGPS();
-        mAMapNavi.stopSpeak();
+        if (mAMapNavi !=null) {
+            mAMapNavi.stopNavi();
+            mAMapNavi.stopGPS();
+            mAMapNavi.stopSpeak();
+        }
         if (mContext != null) {
             mContext.unregisterReceiver(receiver);
         }
@@ -326,20 +331,45 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
     public void onLocationChange(AMapNaviLocation aMapNaviLocation) {
 
 //        NaviLatLng nowLatLng = aMapNaviLocation.getCoord();
+        AMapNaviPath naviPath =  mAMapNavi.getNaviPath();
+        List<NaviLatLng> coordList = naviPath.getCoordList();
+
         mylatlng = aMapNaviLocation.getCoord();
+//        NaviLatLng target_latlng;
+
+        if (coord_index < coordList.size()) {
+            curLatLng = coordList.get(coord_index);
+        } else {
+            curLatLng = coordList.get(coordList.size() - 1);
+        }
+
+        double dist = 0;
+        dist = DistanceOfTwoPoints(mylatlng.getLatitude(),mylatlng.getLongitude(),curLatLng.getLatitude(),curLatLng.getLongitude());
+        Log.d(TAG, "onLocationChange: dist:" + dist);
+        if (dist < 14 && dist > 0) {
+            coord_index += 1;
+        }
 
         if (curLatLng != null) {
             double theta = getBearing(mylatlng,curLatLng);
             Log.d(TAG, "onLocationChange: myLatLng"+ mylatlng);
             Log.d(TAG, "onLocationChange: curLatLng"+ curLatLng);
 
+            // 注意
+            double cali = aMapNaviLocation.getBearing();
+            if (cali > 180) {
+                cali = cali - 360;
+            }
+
+//            theta = -(theta - cali);
+
             String angleMsg = String.valueOf(theta);
 
             Log.d(TAG, "onLocationChange: " + Constants.NAVI_ANGLE + " " + angleMsg);
-            Log.d(TAG, "onLocationChange: bearing" + aMapNaviLocation.getRoadBearing());
+            //Log.d(TAG, "onLocationChange: bearing" + aMapNaviLocation.getRoadBearing());
 
             if (mNaviView!=null){
-                mNaviView.updateView(String.valueOf(aMapNaviLocation.getBearing()),angleMsg);
+                mNaviView.updateView(String.valueOf(dist),angleMsg);
             }
 
             if (mGatt != null) {
@@ -348,7 +378,12 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
                     String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
                     Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
                     mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+                } else {
+                    String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+                    Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
+//                    mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
                 }
+                Log.d(TAG, "onLocationChange: THIS IS ANGLE" + angleMsg);
                 mGatt.sendMessage(angleMsg, Constants.NAVI_ANGLE);
             }
         } else {
@@ -358,13 +393,52 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
                     String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
                     Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
                     mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
+//                } else {
+//                    String caliMsg = String.valueOf(aMapNaviLocation.getBearing());
+//                    Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " " + caliMsg);
+//                    mGatt.sendMessage(caliMsg, Constants.NAVI_CALI);
                 }
             }
             Log.d(TAG, "onLocationChange: " + Constants.NAVI_CALI + " wait navi info update");
         }
     }
 
+    ////////
+    private static final double EARTH_RADIUS = 6378137;
+
+    private static double rad(double d) {
+        return d * Math.PI / 180.0;
+    }
+
+    /**
+     * 根据两点间经纬度坐标（double值），计算两点间距离，
+     *
+     * @param lat1
+     * @param lng1
+     * @param lat2
+     * @param lng2
+     * @return 距离：单位为米
+     */
+    public static double DistanceOfTwoPoints(double lat1,double lng1,
+                                             double lat2,double lng2) {
+        double radLat1 = rad(lat1);
+        double radLat2 = rad(lat2);
+        double a = radLat1 - radLat2;
+        double b = rad(lng1) - rad(lng2);
+        double s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a / 2), 2)
+                + Math.cos(radLat1) * Math.cos(radLat2)
+                * Math.pow(Math.sin(b / 2), 2)));
+        s = s * EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10000;
+        return s;
+    }
+
+
+
+
+
     boolean flag = true;
+    private int coord_index = 1;
     @Override
     public void onNaviInfoUpdate(NaviInfo naviInfo) {
         // 发送导航时间信息
@@ -388,23 +462,31 @@ public class NavigatePresenter extends BaseNaviPresenter implements INavigateCon
         AMapNaviLink link = step.getLinks().get(naviInfo.getCurLink());
 
         // TODO:应该是当前坐标和下一个link的夹角才对
-        Log.d(TAG, "onNaviInfoUpdate: " + naviPath.getCoordList().size());
-        Log.d(TAG, "onNaviInfoUpdate: " + naviPath.getSteps().size());
-        Log.d(TAG, "onNaviInfoUpdate: " + step.getLinks().size());
+        Log.d(TAG, "onNaviInfoUpdate: coord list size:" + naviPath.getCoordList().size());
+        Log.d(TAG, "onNaviInfoUpdate: step size:" + naviPath.getSteps().size());
+        Log.d(TAG, "onNaviInfoUpdate: link size:" + step.getLinks().size());
         Log.d(TAG, "onNaviInfoUpdate: " + step.getLength());
         Log.d(TAG, "onNaviInfoUpdate: " + link.getLength());
-        Log.d(TAG, "onNaviInfoUpdate: " + link.getCoords().size());
+        Log.d(TAG, "onNaviInfoUpdate: link coords size:" + link.getCoords().size());
+        Log.d(TAG, "onNaviInfoUpdate: latlng_1:"+link.getCoords().get(0));
+        Log.d(TAG, "onNaviInfoUpdate: latlng_2:"+naviPath.getCoordList().get(0));
 
         // TODO: 先测试再看问题
-        if (link.getCoords().size() > naviInfo.getCurPoint() + 1) {
-            curLatLng = link.getCoords().get(naviInfo.getCurPoint() + 1);
-        } else if (step.getLinks().size() > naviInfo.getCurLink() + 1) {
-            link = step.getLinks().get(naviInfo.getCurLink() + 1);
-            curLatLng = link.getCoords().get(0);
-        } else {
-            curLatLng = link.getCoords().get(naviInfo.getCurPoint());
-        }
+//        if (link.getCoords().size() > naviInfo.getCurPoint() + 1) {
+//            curLatLng = link.getCoords().get(naviInfo.getCurPoint() + 1);
+//        } else if (step.getLinks().size() > naviInfo.getCurLink() + 1) {
+//            link = step.getLinks().get(naviInfo.getCurLink() + 1);
+//            curLatLng = link.getCoords().get(1);
+//        } else {
+//            curLatLng = link.getCoords().get(naviInfo.getCurPoint());
+//        }
 
+//        int index = (naviInfo.getCurStep()+1)*(naviInfo.getCurLink()+1)*(naviInfo.getCurPoint()+1);
+//        NaviLatLng nn = link.getCoords().get(1);
+//        double dist = DistanceOfTwoPoints(mylatlng.getLatitude(),mylatlng.getLongitude(),nn.getLatitude(),nn.getLongitude());
+//        Log.d(TAG, "onNaviInfoUpdate: dist:" + dist);
+
+//        curLatLng = link.getCoords().get(naviInfo.getCurPoint());
 //        NaviLatLng start = mylatlng;
 //        double theta = getBearing(start,link.getCoords().get(naviInfo.getCurPoint()));
 //        double thetata = getBearing(link.getCoords().get(0),link.getCoords().get(1));

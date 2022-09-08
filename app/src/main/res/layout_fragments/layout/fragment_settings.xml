@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20dp"
-        android:text="Services : Please do wifi connection first and then you can click the check box to choose services.)"/>
+        android:text="Services :Click the checkboxes to open/close sevuces."/>
 
     <CheckBox
         android:id="@+id/weahter_service_cb"

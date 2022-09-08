@@ -65,5 +65,10 @@ public class NavigateService extends Service {
         if (mConn != null) {
             unbindService(mConn);
         }
+        try {
+            mNavigatePresenter.finalize();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 }

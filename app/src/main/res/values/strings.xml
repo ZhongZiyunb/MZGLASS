@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">MZGlass</string>
     <string name="info_introduction_home">Hello! Thank you for using our MZGLASS, this is version 1.1, more
-    functions are under developing. To start using, just move to settings and set your IP address and port
-    to connect our glass. Enjoy !</string>
+    functions are under developing. To start using, just go to settings and use gatt service to connect our glass. Enjoy !</string>
 </resources>
